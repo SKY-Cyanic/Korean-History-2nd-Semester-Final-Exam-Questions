@@ -3,480 +3,567 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>역사의 기로에서: 1910-1948</title>
+    <title>한국 근현대사: 격동의 시간여행</title>
     <style>
+        /* 기본 설정 */
         :root {
-            --bg-color: #121212;
-            --container-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --accent-color: #76c7c0;
-            --highlight-color: #ff6b6b;
-            --btn-bg: #2d2d2d;
-            --btn-hover: #3d3d3d;
-            --border-radius: 8px;
+            --bg-dark: #111111;
+            --card-bg: #1e1e1e;
+            --text-main: #eeeeee;
+            --text-sub: #aaaaaa;
+            --accent: #4ecdc4; /* 청록색 (강조) */
+            --danger: #ff6b6b; /* 붉은색 (위기) */
+            --gold: #ffe66d; /* 중요 키워드 */
+            --border-r: 12px;
         }
 
+        * { box-sizing: border-box; }
+        
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
             margin: 0;
-            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            line-height: 1.6;
+            overflow-x: hidden;
         }
 
-        #game-container {
+        #game-frame {
             width: 100%;
-            max-width: 600px;
-            background-color: var(--container-bg);
-            padding: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-            border-radius: var(--border-radius);
-            min-height: 80vh;
+            max-width: 500px;
+            background: var(--card-bg);
+            border-radius: var(--border-r);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
+            height: 95vh;
             position: relative;
+            overflow: hidden;
         }
 
+        /* 헤더 (연도 및 상태) */
         header {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
             border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        h1 {
-            margin: 0 0 10px 0;
-            font-size: 1.5rem;
-            color: var(--accent-color);
-        }
-
-        #status-bar {
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .year-badge {
+            background: var(--accent);
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: 800;
             font-size: 0.9rem;
-            background: #252525;
-            padding: 8px;
-            border-radius: var(--border-radius);
         }
 
-        .stat-box span {
-            font-weight: bold;
-            display: block;
+        .stats {
             font-size: 0.8rem;
-            color: #888;
+            color: var(--text-sub);
+        }
+        
+        .stat-val { color: #fff; font-weight: bold; margin-left: 5px; }
+
+        /* 메인 시나리오 영역 */
+        #content-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
-        .stat-value {
+        .chapter-title {
+            color: var(--gold);
             font-size: 1.1rem;
-            color: #fff;
-        }
-
-        #timeline {
-            text-align: center;
-            color: var(--accent-color);
-            font-weight: bold;
             margin-bottom: 10px;
-            font-size: 1.1rem;
+            border-left: 4px solid var(--gold);
+            padding-left: 10px;
         }
 
-        #scenario-area {
-            flex-grow: 1;
-            margin-bottom: 20px;
-            animation: fadeIn 0.5s ease;
-        }
-
-        #scenario-text {
+        .scenario-text {
             font-size: 1.05rem;
+            line-height: 1.7;
             margin-bottom: 20px;
-            white-space: pre-line;
+            white-space: pre-wrap;
+        }
+
+        /* 중요 단어 강조 */
+        .kwd { color: var(--accent); font-weight: bold; }
+        .bad { color: var(--danger); font-weight: bold; }
+
+        /* 선택지 버튼 */
+        .choices-box {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .choice-btn {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 10px;
-            background-color: var(--btn-bg);
-            color: var(--text-color);
+            background: #2a2a2a;
             border: 1px solid #444;
-            border-radius: var(--border-radius);
-            cursor: pointer;
+            color: var(--text-main);
+            padding: 16px;
+            border-radius: 8px;
             text-align: left;
-            transition: all 0.2s;
+            cursor: pointer;
+            transition: 0.2s;
             font-size: 1rem;
         }
 
         .choice-btn:hover {
-            background-color: var(--btn-hover);
-            border-color: var(--accent-color);
+            background: #333;
+            border-color: var(--accent);
+            transform: translateX(5px);
         }
 
-        /* Modal / Feedback Overlay */
-        #feedback-overlay {
+        /* 팝업 (해설) */
+        #modal {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 100;
             display: none;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-            box-sizing: border-box;
-            border-radius: var(--border-radius);
-            z-index: 10;
+            padding: 25px;
         }
 
-        .feedback-content {
-            background: #252525;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            border-left: 5px solid var(--accent-color);
-            max-height: 80%;
+        .modal-content {
+            flex: 1;
             overflow-y: auto;
         }
 
-        .feedback-title {
-            color: var(--accent-color);
-            font-weight: bold;
+        .history-tag {
+            display: inline-block;
+            background: var(--accent);
+            color: #000;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 4px;
             margin-bottom: 10px;
-            font-size: 1.2rem;
+            font-weight: bold;
         }
 
-        .feedback-text {
+        .modal-title {
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .fact-list {
+            list-style: none;
+            padding: 0;
             font-size: 0.95rem;
             color: #ccc;
-            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .fact-list li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .fact-list li::before {
+            content: "•";
+            color: var(--accent);
+            position: absolute;
+            left: 0;
         }
 
         .next-btn {
-            background-color: var(--accent-color);
-            color: #121212;
+            background: var(--accent);
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            color: #000;
+            padding: 15px;
             font-weight: bold;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            margin-top: 15px;
             cursor: pointer;
-            float: right;
+            width: 100%;
         }
 
-        .next-btn:hover {
-            background-color: #5ab1aa;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .highlight { color: var(--highlight-color); font-weight: bold; }
-        .accent { color: var(--accent-color); font-weight: bold; }
-
-        /* Ending Screen */
+        /* 엔딩 화면 */
         #ending-screen {
             display: none;
             text-align: center;
-        }
-        #ending-title { font-size: 1.8rem; margin-bottom: 20px; color: var(--accent-color); }
-        #ending-desc { margin-bottom: 30px; }
-        #restart-btn {
-            background-color: var(--highlight-color);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: var(--border-radius);
-            font-size: 1.1rem;
-            cursor: pointer;
+            padding: 30px;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
 
-<div id="game-container">
+<div id="game-frame">
     <header>
-        <h1>역사의 기로에서</h1>
-        <div id="timeline">1910년</div>
-        <div id="status-bar">
-            <div class="stat-box">
-                <span>체력 (생존)</span>
-                <div class="stat-value" id="hp-val">100</div>
-            </div>
-            <div class="stat-box">
-                <span>애국심 (의지)</span>
-                <div class="stat-value" id="patriot-val">0</div>
-            </div>
+        <div class="year-badge" id="year-display">1910</div>
+        <div class="stats">
+            생존 <span class="stat-val" id="hp-val">100</span> | 
+            의지 <span class="stat-val" id="will-val">0</span>
         </div>
     </header>
 
-    <div id="scenario-area">
-        <p id="scenario-text">로딩 중...</p>
-        <div id="choices"></div>
+    <div id="content-area">
+        <h3 class="chapter-title" id="chapter-title">타이틀</h3>
+        <div class="scenario-text" id="scenario-text">로딩 중...</div>
+        <div class="choices-box" id="choices-box"></div>
     </div>
 
-    <!-- Feedback Overlay -->
-    <div id="feedback-overlay">
-        <div class="feedback-content">
-            <div class="feedback-title" id="fb-title">역사적 사실</div>
-            <div class="feedback-text" id="fb-text">내용</div>
-            <button class="next-btn" onclick="nextStage()">다음 시대로 &rarr;</button>
+    <!-- 학습 해설 팝업 -->
+    <div id="modal">
+        <div class="modal-content">
+            <span class="history-tag">역사 기록</span>
+            <h2 class="modal-title" id="modal-title"></h2>
+            <ul class="fact-list" id="modal-list"></ul>
         </div>
+        <button class="next-btn" onclick="nextStage()">다음 시대로 ▶</button>
     </div>
 
-    <!-- Ending Screen -->
+    <!-- 엔딩 화면 -->
     <div id="ending-screen">
-        <h2 id="ending-title">게임 종료</h2>
-        <p id="ending-desc">결과 내용</p>
-        <button id="restart-btn" onclick="location.reload()">다시 시작하기</button>
+        <h1 style="color:var(--accent)">역사의 끝</h1>
+        <p id="ending-msg" style="line-height:1.8; color:#ccc;"></p>
+        <button class="next-btn" onclick="location.reload()">다시 시작하기</button>
     </div>
 </div>
 
 <script>
-    // 게임 상태 변수
-    let currentStageIndex = 0;
-    let hp = 100;
-    let patriotism = 0;
-
-    // PDF 자료에 기반한 시나리오 데이터
-    const scenarios = [
+    /* 
+     * 데이터 구조: PDF의 핵심 키워드를 모두 포함
+     * 별표(★) 항목은 bold 처리하거나 해설에 필수 포함
+     */
+    const stages = [
         {
-            year: "1910년 ~ 1912년",
-            title: "무단 통치의 시작과 토지 조사",
-            text: "한일병합조약 이후 일제는 헌병 경찰을 앞세운 '무단 통치'를 시작했습니다.\n관리와 교사는 제복을 입고 칼을 찼으며, 즉결 처분권이 시행되었습니다.\n\n1912년, 일제는 '근대적 토지 소유권 확립'을 명분으로 <span class='highlight'>토지조사사업</span>을 실시했습니다.\n기한 내에 신고하지 않으면 땅을 빼앗긴다고 합니다.\n당신은 조상 대대로 물려받은 땅을 가지고 있습니다. 어떻게 하시겠습니까?",
+            year: "1910년대",
+            title: "무단 통치와 땅을 잃은 설움",
+            text: "헌병 경찰이 칼을 차고 다니며 즉결 처분을 내리는 <span class='bad'>무단 통치</span>의 시대입니다.\n\n총독부는 <span class='kwd'>토지조사사업</span>을 공포하며 '기한 내에 땅을 신고하라'고 합니다. 신고 절차는 복잡하고 일본어가 가득합니다. 당신은 어떻게 하겠습니까?",
             choices: [
-                {
-                    text: "땅을 지키기 위해 기한 내에 신고한다.",
-                    effect: { hp: 0, pat: 0 },
-                    feedbackTitle: "토지조사사업 (1912~)",
-                    feedback: "신고를 통해 소유권은 인정받았지만, 많은 농민들은 복잡한 절차와 무지로 땅을 잃었습니다.\n\n[학습 포인트]\n- 결과: 총독부 소유 토지 증가 → <span class='accent'>동양척식주식회사</span>로 불하\n- 영향: 지주의 소유권만 인정되고, 소작인의 경작권(도지권)은 부정되었습니다."
+                { txt: "신고하지 않는다 (반발)", type: "risk", 
+                  resTitle: "토지조사사업 (1912~)",
+                  resList: [
+                      "신고주의 원칙: 기한 내 미신고 토지는 총독부가 몰수했습니다.",
+                      "결과: 총독부 소유지 급증 → <span class='kwd'>동양척식주식회사</span>에 헐값 불하.",
+                      "농민 피해: 소작인의 경작권(도지권)이 부정되어 기한부 계약직으로 전락했습니다."
+                  ]
                 },
-                {
-                    text: "일제의 정책에 반대하여 신고하지 않는다.",
-                    effect: { hp: -20, pat: 10 },
-                    feedbackTitle: "토지를 잃다",
-                    feedback: "신고하지 않은 토지는 '주인 없는 땅'으로 간주되어 조선총독부에 몰수되었습니다.\n당신은 소작농으로 전락하여 힘겨운 삶을 살게 되었습니다.\n\n[학습 포인트]\n- 방식: 토지 소유자가 일정 기간 내 신고하는 '기한부 신고제'였습니다."
+                { txt: "복잡해도 신고한다 (생존)", type: "safe",
+                  resTitle: "무단 통치 (1910년대)",
+                  resList: [
+                      "토지 소유권은 인정받았으나, 식민지 지주제가 강화되었습니다.",
+                      "정치: 헌병경찰제(범죄즉결처분권), 조선태형령, 언론/출판/집회/결사 자유 박탈.",
+                      "교육: 보통학교 4년, 실업 교육 위주, 사립학교/서당 탄압."
+                  ]
                 }
             ]
         },
         {
             year: "1919년",
-            title: "3.1 운동의 물결",
-            text: "1910년대 무단 통치의 억압 속에서도, 윌슨의 민족자결주의와 고종의 장례일을 계기로 독립의 열망이 타올랐습니다.\n\n서울 탑골공원에서 시작된 만세 시위가 전국으로, 도시에서 농촌으로 확산되고 있습니다.\n친구들이 태극기를 건네며 함께 거리로 나가자고 합니다.",
+            title: "대한 독립 만세!",
+            text: "고종 황제의 인산일, 윌슨의 민족자결주의 소식에 힙입어 탑골공원에서 만세 소리가 울려 퍼집니다.\n\n이는 전 민족적인 <span class='kwd'>3.1 운동</span>입니다. 일본 경찰이 총칼로 위협하지만, 태극기를 든 군중은 멈추지 않습니다.",
             choices: [
-                {
-                    text: "태극기를 들고 '대한 독립 만세'를 외치며 나간다.",
-                    effect: { hp: -30, pat: 30 },
-                    feedbackTitle: "3.1 운동 (1919)",
-                    feedback: "일제의 무자비한 폭력 진압(제암리 사건 등)으로 크게 다쳤지만, 당신의 용기는 역사를 바꿨습니다.\n\n[학습 포인트]\n- 의의: 최대 규모의 민족 운동, <span class='accent'>대한민국 임시정부</span> 수립의 계기.\n- 변화: 일제는 무단 통치에서 '문화 통치'로 통치 방식을 바꾸게 됩니다."
+                { txt: "거리에 나가 만세를 외친다", type: "patriot",
+                  resTitle: "3.1 운동의 결과",
+                  resList: [
+                      "배경: 윌슨의 14개조 평화원칙(민족자결주의), 신한청년당 김규식 파견, 2.8 독립선언.",
+                      "전개: 도시 → 농촌(폭력투쟁화), 국내 → 국외 확산.",
+                      "결과: 일제 통치 방식 변화 (무단→<span class='kwd'>문화 통치</span>).",
+                      "의의: <span class='kwd'>대한민국 임시정부</span> 수립의 직접적 계기."
+                  ]
                 },
-                {
-                    text: "무서워서 집 안에 숨어 상황을 지켜본다.",
-                    effect: { hp: 0, pat: -10 },
-                    feedbackTitle: "3.1 운동의 영향",
-                    feedback: "시위에 참여하진 않았지만, 창밖으로 울려 퍼지는 함성에 마음이 뜨거워집니다.\n\n[학습 포인트]\n- 전개: 초기에는 비폭력 평화 시위였으나, 일제의 무력 탄압에 저항하며 점차 무력 저항으로 발전했습니다.\n- 계층: 학생, 시민 → 농민, 노동자로 참여 계층이 확대되었습니다."
+                { txt: "일단 몸을 피한다", type: "safe",
+                  resTitle: "제암리 학살 사건",
+                  resList: [
+                      "일제는 평화 시위를 무력으로 진압했습니다(제암리 사건 등).",
+                      "이후 독립운동은 조직화의 필요성을 느끼게 되었습니다."
+                  ]
+                }
+            ]
+        },
+        {
+            year: "1920년대 초",
+            title: "임시정부와 산미증식계획",
+            text: "상하이에 수립된 <span class='kwd'>대한민국 임시정부</span>는 연통제와 교통국을 운영하며 자금을 모으고 있습니다.\n\n한편 국내에서는 <span class='kwd'>산미증식계획</span>으로 쌀 생산은 늘었지만, 일본으로 가져가는 양이 더 많아 쌀값이 폭등하고 만주산 잡곡을 먹어야 합니다.",
+            choices: [
+                { txt: "임시정부에 독립 자금을 댄다", type: "patriot",
+                  resTitle: "대한민국 임시정부의 위기",
+                  resList: [
+                      "활동: 독립공채 발행, 독립신문, 구미위원부, 한일관계사료집.",
+                      "위기: 연통제/교통국 발각, 외교론(이승만) vs 무장투쟁(이동휘) 갈등.",
+                      "결과: <span class='kwd'>국민대표회의(1923)</span> 개최 → 창조파 vs 개조파 대립으로 결렬, 침체기 진입."
+                  ]
+                },
+                { txt: "농민들과 소작 쟁의를 일으킨다", type: "risk",
+                  resTitle: "산미증식계획 & 농민 운동",
+                  resList: [
+                      "산미증식계획(1920~): 증산량 < 반출량 → 국내 식량 사정 악화, 농민 몰락.",
+                      "농민 운동: <span class='kwd'>암태도 소작 쟁의</span> (소작료 인하 요구 성공).",
+                      "발전: 1930년대에는 혁명적 적색 농민 조합 운동으로 발전."
+                  ]
                 }
             ]
         },
         {
             year: "1920년대 중반",
-            title: "문화 통치의 기만과 산미증식계획",
-            text: "일제는 3.1운동 이후 '문화 통치'를 표방하며 헌병 경찰을 보통 경찰로 바꿨지만, 뒤로는 <span class='highlight'>치안유지법</span>을 제정해 독립운동가를 탄압하고 있습니다.\n\n한편, '산미증식계획'으로 쌀 생산량은 늘었지만, 일본으로 빠져나가는 양(반출량)이 더 많아 쌀이 부족합니다.\n조만식 선생이 평양에서 '내 살림 내 것으로'라며 <span class='accent'>물산장려운동</span>을 시작했다는 소식이 들립니다.",
+            title: "실력 양성과 사회적 저항",
+            text: "일제의 회사령 폐지로 일본 기업 진출이 늘자 <span class='kwd'>물산장려운동</span>(평양, 조만식)이 일어납니다. '내 살림 내 것으로!'\n\n또한 백정들의 차별 철폐를 위한 <span class='kwd'>형평운동</span>, 여성 단체 <span class='kwd'>근우회</span>, 문맹 퇴치를 위한 신문사들의 활동도 활발합니다.",
             choices: [
-                {
-                    text: "비싸더라도 국산 토산품을 애용한다 (물산장려운동 참여)",
-                    effect: { hp: -10, pat: 10 },
-                    feedbackTitle: "물산장려운동",
-                    feedback: "회사령 폐지와 관세 철폐 움직임에 대항해 시작되었습니다.\n하지만 물가 상승으로 인해 사회주의 계열로부터 '자본가만을 위한 운동'이라는 비판을 받기도 했습니다.\n\n[학습 포인트]\n- 구호: 조선 사람 조선 것으로, 우리 것으로 살자"
+                { txt: "국산품 애용 및 대학 설립 모금", type: "safe",
+                  resTitle: "실력 양성 운동",
+                  resList: [
+                      "물산장려운동: 사회주의계로부터 '자본가 이익 대변' 비판받음.",
+                      "<span class='kwd'>민립대학 설립운동</span>: '한민족 1천만이 1원씩', 일제 방해로 실패 → 경성제국대학 설립.",
+                      "문맹 퇴치: 조선일보(문자보급), 동아일보(<span class='kwd'>브나로드 운동</span>-배우자 가르치자 다함께)."
+                  ]
                 },
-                {
-                    text: "당장 먹고 살기 힘드니 싼 일본 제품을 쓴다.",
-                    effect: { hp: 10, pat: -5 },
-                    feedbackTitle: "경제 수탈의 심화",
-                    feedback: "생존을 위한 선택이었지만, 경제 예속은 심화되었습니다.\n\n[학습 포인트]\n- 산미증식계획 결과: 증산량보다 반출량이 많아 국내 식량 사정이 악화되었고, 증산 비용은 농민에게 전가되어 농민이 몰락했습니다."
+                { txt: "사회주의 계열과 연대한다", type: "risk",
+                  resTitle: "6.10 만세 운동 & 치안유지법",
+                  resList: [
+                      "6.10 만세 운동(1926): 순종 인산일, 민족주의+사회주의 연대 계기.",
+                      "일제 탄압: <span class='kwd'>치안유지법(1925)</span>으로 사회주의 및 독립운동가 탄압."
+                  ]
                 }
             ]
         },
         {
-            year: "1926년 ~ 1929년",
-            title: "학생들과 신간회",
-            text: "1926년 순종의 장례식 날(6.10 만세운동), 그리고 1929년 광주에서 한일 학생 간의 충돌로 시작된 항일 운동이 전국으로 번졌습니다.\n\n국내에서는 민족주의 진영과 사회주의 진영이 연합하여 최대 규모의 합법적 항일 단체인 <span class='highlight'>신간회</span>(1927)가 결성되었습니다. 신간회 지회에서 당신에게 가입을 권유합니다.",
+            year: "1927년",
+            title: "민족 유일당, 신간회",
+            text: "이념을 넘어 하나로! 비타협적 민족주의와 사회주의 진영이 손을 잡고 <span class='kwd'>신간회</span>를 창립했습니다.\n\n때마침 나주역 충돌 사건으로 시작된 <span class='kwd'>광주 학생 항일 운동</span>이 전국으로 확산되고 있습니다.",
             choices: [
-                {
-                    text: "신간회에 가입하여 광주 학생 항일 운동 진상조사단 활동을 돕는다.",
-                    effect: { hp: -10, pat: 20 },
-                    feedbackTitle: "신간회와 광주 학생 항일 운동",
-                    feedback: "신간회는 '광주 학생 항일 운동'에 진상 조사단을 파견하고 민중 대회를 계획하며 학생들을 지원했습니다.\n\n[학습 포인트]\n- 신간회: '비타협적 민족주의 + 사회주의'의 민족 유일당 운동.\n- 광주 학생 항일 운동: 3.1운동 이후 최대 규모의 항일 운동."
+                { txt: "신간회 회원으로 광주에 진상조사단 파견", type: "patriot",
+                  resTitle: "신간회 (1927~1931)",
+                  resList: [
+                      "성격: 최대 규모의 합법적 항일 단체 (이상재 회장).",
+                      "활동: <span class='kwd'>광주 학생 항일 운동</span>에 진상 조사단 파견, 민중 대회 계획.",
+                      "해소: 새 지도부의 타협적 태도 + 코민테른 노선 변화로 해소됨."
+                  ]
                 },
-                {
-                    text: "정치적 활동은 위험하다. 야학에서 한글을 가르치며 문맹 퇴치에 힘쓴다.",
-                    effect: { hp: 0, pat: 10 },
-                    feedbackTitle: "문맹 퇴치 운동",
-                    feedback: "조선일보의 '문자 보급 운동'이나 동아일보의 '브나로드 운동'에 동참하셨군요.\n\n[학습 포인트]\n- 1930년대 초반 언론사 주도로 '아는 것이 힘, 배워야 산다' 등의 구호를 내걸고 전개되었습니다."
+                { txt: "만주로 넘어가 무장 투쟁 준비", type: "risk",
+                  resTitle: "1920년대 국외 무장 투쟁",
+                  resList: [
+                      "봉오동 전투(홍범도) → 청산리 대첩(김좌진) → 간도 참변 → 자유시 참변 → 3부 성립(참의/정의/신민부).",
+                      "<span class='kwd'>의열단(1919)</span>: 김원봉 조직, 신채호의 '조선혁명선언' 지침. (김익상, 나석주 등 의거 활동)."
+                  ]
                 }
             ]
         },
         {
-            year: "1930년대 초반",
-            title: "국외 무장 투쟁",
-            text: "만주에서는 일제의 침략이 본격화되자 한·중 연합 작전이 펼쳐지고 있습니다. \n김구 선생님은 임시정부의 침체를 극복하기 위해 <span class='accent'>한인애국단</span>을 조직했습니다.\n\n상해에서 윤봉길 의사가 거사를 준비 중입니다. 당신은 상해에 있는 교민입니다.",
+            year: "1930년대 초",
+            title: "만주 사변과 한인애국단",
+            text: "일제가 만주를 침략했습니다. 이에 만주에서는 한국 독립군과 조선 혁명군이 중국군과 연합 작전을 펼칩니다.\n\n침체된 임시정부를 살리기 위해 김구 선생은 <span class='kwd'>한인애국단</span>을 조직합니다. 당신 앞에는 폭탄이 놓여 있습니다.",
             choices: [
-                {
-                    text: "윤봉길 의사의 훙커우 공원 거사를 돕는다.",
-                    effect: { hp: -20, pat: 30 },
-                    feedbackTitle: "한인애국단 (1931)",
-                    feedback: "윤봉길 의사의 의거는 중국 국민당 정부가 대한민국 임시정부를 적극 지원하게 되는 결정적 계기가 되었습니다.\n\n[학습 포인트]\n- 이봉창: 도쿄에서 일왕 암살 시도.\n- 윤봉길: 상해 훙커우 공원 폭탄 투척."
+                { txt: "윤봉길이 되어 훙커우 공원으로", type: "patriot",
+                  resTitle: "한인애국단 & 만주 항쟁",
+                  resList: [
+                      "이봉창: 도쿄 일왕 암살 시도.",
+                      "윤봉길: 상하이 훙커우 공원 의거 → 중국 국민당의 임시정부 지원 계기.",
+                      "만주 한국독립군(지청천): 쌍성보, 대전자령 전투 (한중연합).",
+                      "만주 조선혁명군(양세봉): 영릉가, 흥경성 전투."
+                  ]
                 },
-                {
-                    text: "만주 북부로 이동하여 지청천 장군의 한국독립군에 합류한다.",
-                    effect: { hp: -20, pat: 30 },
-                    feedbackTitle: "한·중 연합 작전",
-                    feedback: "한국독립군(북만주, 쌍성보/대전자령 전투)이나 조선혁명군(남만주, 영릉가/흥경성 전투)은 중국군과 연합하여 일본군을 격파했습니다.\n\n[학습 포인트]\n- 배경: 만주사변(1931) 이후 일제의 만주 침략."
+                { txt: "국내에서 계몽 운동 계속", type: "safe",
+                  resTitle: "민족 문화 수호 운동",
+                  resList: [
+                      "역사: 박은식(한국통사), 신채호(조선상고사-낭가사상), 백남운(사회경제사학-정체성론 반박).",
+                      "한글: 조선어학회(한글 맞춤법 통일안, 우리말 큰사전 시도) → 조선어학회 사건(1942)으로 탄압."
+                  ]
                 }
             ]
         },
         {
-            year: "1930년대 후반 ~ 1940년대",
-            title: "민족 말살 통치와 총동원",
-            text: "중일전쟁(1937) 이후 일제는 침략 전쟁을 위해 조선을 병참 기지로 만들고 있습니다.\n'내선일체'를 강조하며 신사 참배와 궁성 요배를 강요하고, 심지어 우리의 이름마저 일본식으로 바꾸라(창씨개명)고 합니다.\n\n동사무소 직원이 찾아와 창씨개명 신고서를 내밀며 압박합니다.",
+            year: "1930년대 후반",
+            title: "민족 말살과 병참 기지화",
+            text: "중일전쟁(1937) 이후 조선은 거대한 감옥이자 보급 기지가 되었습니다.\n<span class='kwd'>국가 총동원법</span>에 따라 놋그릇까지 빼앗기(공출)고, 지원병과 징용으로 끌려갑니다.\n<span class='kwd'>남면북양</span> 정책으로 면화 재배와 양 사육을 강요받습니다.",
             choices: [
-                {
-                    text: "아이들의 학교 입학을 위해 어쩔 수 없이 창씨개명을 한다.",
-                    effect: { hp: 10, pat: -20 },
-                    feedbackTitle: "민족 말살 통치",
-                    feedback: "많은 조선인이 차별과 불이익(입학 거부, 식량 배급 제외) 때문에 원치 않는 개명을 해야 했습니다.\n\n[학습 포인트]\n- 내용: 황국신민서사 암송, 우리말 사용 금지, 소학교를 '국민학교(황국신민의 학교)'로 개칭.\n- 국가총동원법: 인적(징용, 위안부), 물적(공출) 수탈 강화."
+                { txt: "창씨개명을 거부하고 버틴다", type: "risk",
+                  resTitle: "민족 말살 통치",
+                  resList: [
+                      "황국신민서사 암송, 신사 참배, 궁성 요배 강요.",
+                      "창씨개명, 조선어 사용 금지, 소학교를 '국민학교'로 개칭.",
+                      "동아/조선일보 폐간.",
+                      "위안부 동원 등 인권 유린 극대화."
+                  ]
                 },
-                {
-                    text: "내 성을 바꿀 순 없다. 끝까지 거부하고, 조선어학회 활동을 지원한다.",
-                    effect: { hp: -30, pat: 30 },
-                    feedbackTitle: "조선어학회 사건 (1942)",
-                    feedback: "창씨개명을 거부하며 온갖 불이익을 당했습니다. 또한 한글 맞춤법을 제정하고 사전을 편찬하려던 조선어학회 회원들이 투옥되는 사건이 발생합니다.\n\n[학습 포인트]\n- 일제는 민족 문화를 말살하기 위해 역사 왜곡(식민사관)과 우리말 사용을 금지했습니다."
+                { txt: "어쩔 수 없이 순응한다", type: "safe",
+                  resTitle: "병참 기지화 정책",
+                  resList: [
+                      "목적: 침략 전쟁 수행을 위한 물자/인력 수탈.",
+                      "산업: 북부 지방에 중화학 공업 집중 육성 (분단의 경제적 배경).",
+                      "<span class='kwd'>국가총동원법(1938)</span>: 인적/물적 자원 강제 동원."
+                  ]
                 }
             ]
         },
         {
-            year: "1945년 8월 15일 이후",
-            title: "광복, 그리고 분단",
-            text: "드디어 광복을 맞이했습니다! 하지만 기쁨도 잠시, 38도선을 경계로 미군과 소련군이 들어왔습니다.\n모스크바 3국 외상 회의에서 <span class='highlight'>신탁 통치</span> 결정 소식이 전해지자 좌우익의 대립이 격해집니다.\n\n1948년 5월 10일, 남한만의 총선거가 결정되었습니다. 김구 선생님은 '38선을 베고 쓰러질지언정 단독 정부는 안 된다'며 남북 협상을 위해 평양으로 가셨습니다.",
+            year: "1940년대",
+            title: "광복을 향한 마지막 준비",
+            text: "충칭에 정착한 임시정부는 <span class='kwd'>한국광복군</span>을 창설하고 대일 선전포고를 했습니다. 국내 진공 작전을 준비 중입니다.\n\n국내에서는 여운형이 비밀리에 <span class='kwd'>조선건국동맹</span>을 결성했습니다.",
             choices: [
-                {
-                    text: "현실적으로 가능한 지역(남한)에서라도 먼저 정부를 수립해야 한다. (5.10 총선거 투표)",
-                    effect: { hp: 10, pat: 0 },
-                    feedbackTitle: "대한민국 정부 수립 (1948)",
-                    feedback: "5.10 총선거를 통해 제헌 국회가 구성되었고, 7월 17일 헌법 제정, 8월 15일 대한민국 정부가 수립되었습니다. 반면 제주도 4.3 사건 등 갈등도 있었습니다.\n\n[학습 포인트]\n- 초대 대통령: 이승만\n- 과제: 농지 개혁(유상매입 유상분배), 친일파 청산(반민특위 실패)."
+                { txt: "한국광복군에 합류하여 OSS 훈련", type: "patriot",
+                  resTitle: "대한민국 임시정부 (충칭 시기)",
+                  resList: [
+                      "정당: <span class='kwd'>한국독립당</span> (김구+조소앙+지청천 통합).",
+                      "군사: <span class='kwd'>한국광복군</span> (총사령 지청천, 김원봉의 조선의용대 일부 합류).",
+                      "활동: 연합군 일원으로 인도/미얀마 전선 투입, 국내 진공 작전 계획(실현X).",
+                      "강령: 조소앙의 삼균주의 바탕 <span class='kwd'>건국강령</span> 발표."
+                  ]
                 },
-                {
-                    text: "통일된 조국이 아니면 의미가 없다. 투표에 참여하지 않는다.",
-                    effect: { hp: -10, pat: 20 },
-                    feedbackTitle: "남북 협상과 분단",
-                    feedback: "김구, 김규식 등은 남북 협상을 추진했으나 실패했습니다. 결국 한반도에는 두 개의 정부가 들어서게 되었습니다.\n\n[학습 포인트]\n- 유엔 소총회: '가능한 지역(남한)'에서의 총선거 결정.\n- 김구: <삼천만 동포에게 읍고함> 발표."
+                { txt: "화북 지방 조선독립동맹 활동", type: "risk",
+                  resTitle: "사회주의 계열 독립 운동",
+                  resList: [
+                      "김원봉의 조선의용대 주력은 화북으로 이동하여 조선의용군 개편.",
+                      "조선독립동맹(김두봉) 결성.",
+                      "국내: 여운형의 <span class='kwd'>조선건국동맹(1944)</span>이 건국 준비."
+                  ]
+                }
+            ]
+        },
+        {
+            year: "1945년 ~ 1948년",
+            title: "광복과 분단의 갈림길",
+            text: "1945년 8월 15일 광복! 그러나 38도선을 경계로 미군과 소련군이 들어옵니다.\n\n<span class='kwd'>모스크바 3국 외상회의</span>에서 신탁 통치 문제가 결정되자 좌우익 대립이 폭발합니다. 중도파 여운형과 김규식은 <span class='kwd'>좌우합작운동</span>을 전개합니다.",
+            choices: [
+                { txt: "김구 선생을 따라 남북 협상에 지지", type: "patriot",
+                  resTitle: "정부 수립 과정의 갈등",
+                  resList: [
+                      "<span class='kwd'>모스크바 3국 외상회의</span>: 임시정부 수립, 미소공위 설치, 신탁통치(최대5년) → 좌익 찬탁 vs 우익 반탁.",
+                      "<span class='kwd'>좌우합작운동</span>: 미소공위 결렬 후 여운형/김규식 주도. '좌우합작 7원칙' 발표했으나 여운형 암살로 실패.",
+                      "<span class='kwd'>남북 협상</span>: UN의 남한 단독 선거 결정에 반대. 김구/김규식 방북 → 성과 없이 끝남."
+                  ]
+                },
+                { txt: "5.10 총선거에 참여하여 정부 수립", type: "safe",
+                  resTitle: "대한민국 정부 수립 (1948.8.15)",
+                  resList: [
+                      "과정: 제주 4.3 사건 등 혼란 속 5.10 총선거(남한만) 실시.",
+                      "제헌 국회: 헌법 제정, 대통령 이승만 선출.",
+                      "주요 과제: <span class='kwd'>반민특위</span>(친일파 청산 실패), 농지개혁(유상매입 유상분배, 지주제 소멸)."
+                  ]
                 }
             ]
         }
     ];
 
-    // 게임 로직 함수들
-    function updateStats(change) {
-        hp += change.hp;
-        patriotism += change.pat;
+    let currentStage = 0;
+    let hp = 100;
+    let will = 0;
 
-        if (hp > 100) hp = 100;
-        if (hp < 0) hp = 0;
-
-        document.getElementById('hp-val').innerText = hp;
-        document.getElementById('patriot-val').innerText = patriotism;
-
-        // 시각적 효과 (간단한 색상 변경)
-        if(hp < 30) document.getElementById('hp-val').style.color = '#ff6b6b';
-        else document.getElementById('hp-val').style.color = '#fff';
-    }
+    const ui = {
+        year: document.getElementById('year-display'),
+        hp: document.getElementById('hp-val'),
+        will: document.getElementById('will-val'),
+        title: document.getElementById('chapter-title'),
+        text: document.getElementById('scenario-text'),
+        choices: document.getElementById('choices-box'),
+        modal: document.getElementById('modal'),
+        mTitle: document.getElementById('modal-title'),
+        mList: document.getElementById('modal-list'),
+        ending: document.getElementById('ending-screen'),
+        content: document.getElementById('content-area'),
+        header: document.querySelector('header')
+    };
 
     function renderStage() {
-        if (currentStageIndex >= scenarios.length) {
+        if (currentStage >= stages.length) {
             showEnding();
             return;
         }
-
-        if (hp <= 0) {
-            showEnding("dead");
-            return;
-        }
-
-        const stage = scenarios[currentStageIndex];
         
-        // UI 업데이트
-        document.getElementById('timeline').innerText = stage.year;
+        const stage = stages[currentStage];
+        ui.year.innerText = stage.year;
+        ui.title.innerText = stage.title;
+        ui.text.innerHTML = stage.text; // innerHTML to parse span
         
-        // 텍스트 타이핑 효과처럼 보이기 위해 내용을 교체
-        const textElem = document.getElementById('scenario-text');
-        textElem.innerHTML = `<strong style="font-size:1.2em; color:#76c7c0; display:block; margin-bottom:10px;">${stage.title}</strong>${stage.text}`;
-
-        // 선택지 생성
-        const choicesDiv = document.getElementById('choices');
-        choicesDiv.innerHTML = '';
-
-        stage.choices.forEach((choice, index) => {
-            const btn = document.createElement('button');
-            btn.className = 'choice-btn';
-            btn.innerText = choice.text;
-            btn.onclick = () => handleChoice(choice);
-            choicesDiv.appendChild(btn);
+        ui.choices.innerHTML = "";
+        stage.choices.forEach(c => {
+            const btn = document.createElement('div');
+            btn.className = "choice-btn";
+            btn.innerText = c.txt;
+            btn.onclick = () => selectChoice(c);
+            ui.choices.appendChild(btn);
         });
     }
 
-    function handleChoice(choice) {
-        updateStats(choice.effect);
+    function selectChoice(choice) {
+        // 스탯 변동
+        if(choice.type === "patriot") {
+            hp -= 10; will += 20;
+        } else if(choice.type === "risk") {
+            hp -= 20; will += 10;
+        } else {
+            hp += 5; will -= 5;
+        }
+        updateStats();
 
-        // 피드백 팝업 표시
-        const overlay = document.getElementById('feedback-overlay');
-        document.getElementById('fb-title').innerText = choice.feedbackTitle;
-        document.getElementById('fb-text').innerHTML = choice.feedback;
-        overlay.style.display = 'flex';
+        // 모달 내용 채우기
+        ui.mTitle.innerText = choice.resTitle;
+        ui.mList.innerHTML = "";
+        choice.resList.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = item;
+            ui.mList.appendChild(li);
+        });
+        
+        ui.modal.style.display = "flex";
     }
 
     function nextStage() {
-        document.getElementById('feedback-overlay').style.display = 'none';
-        currentStageIndex++;
-        renderStage();
-    }
-
-    function showEnding(type) {
-        document.getElementById('scenario-area').style.display = 'none';
-        document.getElementById('ending-screen').style.display = 'block';
-        const title = document.getElementById('ending-title');
-        const desc = document.getElementById('ending-desc');
-
-        if (type === "dead") {
-            title.innerText = "비극적인 최후";
-            desc.innerText = "격동의 역사 속에서 당신은 안타깝게 목숨을 잃었습니다.\n일제 강점기의 가혹한 현실은 수많은 이들의 희생을 강요했습니다.";
+        ui.modal.style.display = "none";
+        if(hp <= 0) {
+            showBadEnding();
         } else {
-            // 점수에 따른 엔딩 분기
-            title.innerText = "새로운 나라의 아침";
-            let content = "1948년, 대한민국 정부가 수립되었습니다.<br><br>";
-            
-            if (patriotism >= 80) {
-                content += "당신은 <strong>독립유공자</strong>로서 헌신적인 삶을 살았습니다. 당신의 이름은 역사에 길이 남을 것입니다.";
-            } else if (patriotism >= 40) {
-                content += "당신은 격동의 시기를 묵묵히 견뎌낸 <strong>자랑스러운 시민</strong>입니다. 당신의 인내 덕분에 광복이 찾아왔습니다.";
-            } else {
-                content += "혼란스러운 시대 속에서 생존을 위해 타협할 수밖에 없었던 순간들이 있었습니다. 역사는 그것을 비극이라 부릅니다.";
-            }
-            
-            content += "<br><br>최종 점수<br>생존: " + hp + " / 애국심: " + patriotism;
-            desc.innerHTML = content;
+            currentStage++;
+            renderStage();
         }
     }
 
-    // 게임 시작
-    window.onload = function() {
-        renderStage();
+    function updateStats() {
+        if(hp > 100) hp = 100;
+        if(hp < 0) hp = 0;
+        ui.hp.innerText = hp;
+        ui.will.innerText = will;
+        
+        ui.hp.style.color = hp < 30 ? "#ff6b6b" : "#fff";
     }
+
+    function showBadEnding() {
+        ui.content.style.display = "none";
+        ui.header.style.display = "none";
+        ui.ending.style.display = "flex";
+        ui.ending.querySelector('h1').innerText = "순국선열이 되다";
+        document.getElementById('ending-msg').innerText = "가혹한 일제의 탄압을 이기지 못하고 눈을 감았습니다.\n당신의 희생은 후대에 길이 기억될 것입니다.";
+    }
+
+    function showEnding() {
+        ui.content.style.display = "none";
+        ui.header.style.display = "none";
+        ui.ending.style.display = "flex";
+        
+        let msg = "";
+        if (will >= 80) {
+            msg = "당신은 치열하게 싸운 <strong style='color:#4ecdc4'>독립운동가</strong>입니다.\n대한민국 정부 수립의 영광을 누리십시오.\n(역사 지식 완벽 마스터!)";
+        } else if (will >= 40) {
+            msg = "당신은 격동의 시기를 견뎌낸 <strong style='color:#ffe66d'>시민</strong>입니다.\n광복의 기쁨을 함께 나눕시다.";
+        } else {
+            msg = "혼란스러운 역사 속에서 생존했으나,\n많은 아쉬움이 남습니다. 다시 도전해보세요!";
+        }
+        
+        document.getElementById('ending-msg').innerHTML = msg + `<br><br>최종 상태<br>체력: ${hp} / 의지: ${will}`;
+    }
+
+    // 초기 실행
+    renderStage();
+
 </script>
 
 </body>
